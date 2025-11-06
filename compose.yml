@@ -1,6 +1,6 @@
 services:
   # API de Héroes
-  heroes-api:
+  productos-api:
     build: .
     container_name: productos-api
     restart: unless-stopped
