@@ -1,0 +1,74 @@
+services:
+  # API de Héroes
+  heroes-api:
+    build: .
+    container_name: productos-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MONGODB_URI=mongodb://dovin:dovinr06@mongo:27017
+    depends_on:
+      - mongo
+    networks:
+      - productos-network
+    healthcheck:
+      test: [ "CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    develop:
+      watch:
+        - action: rebuild
+          path: .           
+
+  # Base de datos MongoDB
+  mongo:
+    image: mongo:7-jammy
+    container_name: productos-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=dovin
+      - MONGO_INITDB_ROOT_PASSWORD=dovinr06
+    volumes:
+      - mongo_data:/data/db
+      - ./app/mongo-init:/docker-entrypoint-initdb.d
+    networks:
+      - productos-network
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # MongoDB Express (Interfaz web para administrar MongoDB)
+  mongo-express:
+    image: mongo-express:1.0.2
+    container_name: productos-mongo-express
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=dovin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=dovinr06
+      - ME_CONFIG_MONGODB_URL=mongodb://dovin:dovinr06@mongo:27017/
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=dovinr06
+    depends_on:
+      - mongo
+    networks:
+      - productos-network
+
+volumes:
+  mongo_data:
+    driver: local
+
+networks:
+  productos-network:
+    driver: bridge
