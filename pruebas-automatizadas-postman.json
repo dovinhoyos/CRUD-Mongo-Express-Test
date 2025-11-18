@@ -1,0 +1,323 @@
+{
+	"info": {
+		"_postman_id": "aab97172-5e0d-4126-99fa-a5a5edcf6c27",
+		"name": "Api Productos",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28224133"
+	},
+	"item": [
+		{
+			"name": "Obtener Productos",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Código de estado es 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Respuesta contiene un array\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.be.an(\"array\");",
+							"});",
+							"",
+							"pm.test(\"Respuesta objeto de array contiene un campo codigo\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    const primerProducto = jsonData[0]",
+							"    pm.expect(primerProducto).to.have.property(\"codigo\");",
+							"});",
+							"",
+							"// Update collection variable with product count",
+							"const responseData = pm.response.json();",
+							"const productCount = responseData.length;",
+							"pm.collectionVariables.set(\"CANTIDAD_PRODUCTOS\", productCount);",
+							"",
+							"console.log(`Updated CANTIDAD_PRODUCTOS variable with count: ${productCount}`);"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{URL_BASE}}",
+					"host": [
+						"{{URL_BASE}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Agregar Producto",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Código de estado es 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Respuesta contiene un objeto json con atributo precio de tipo number\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    pm.expect(jsonData.precio).to.be.a(\"number\");",
+							"});",
+							"",
+							"// Actualizar contador de productos cuando se agrega exitosamente",
+							"if (pm.response.code === 201) {",
+							"    // Obtener el valor actual de CANTIDAD_PRODUCTOS, si no existe inicializar en 0",
+							"    let cantidadActual = pm.collectionVariables.get(\"CANTIDAD_PRODUCTOS\");",
+							"    ",
+							"    // Si la variable no existe o no es un número válido, inicializar en 0",
+							"    if (!cantidadActual || isNaN(cantidadActual)) {",
+							"        cantidadActual = 0;",
+							"    } else {",
+							"        cantidadActual = parseInt(cantidadActual);",
+							"    }",
+							"    ",
+							"    // Incrementar la cantidad en 1",
+							"    cantidadActual += 1;",
+							"    ",
+							"    // Guardar el nuevo valor en la variable de colección",
+							"    pm.collectionVariables.set(\"CANTIDAD_PRODUCTOS\", cantidadActual);",
+							"    ",
+							"    console.log(`Producto agregado exitosamente. Cantidad total de productos: ${cantidadActual}`);",
+							"}"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"codigo\": 96,\n    \"nombre\": \"Ruana\",\n    \"precio\": 399000,\n    \"categoria\": \"Ropa\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL_BASE}}",
+					"host": [
+						"{{URL_BASE}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Prueba Tiempo Respuesta",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response time is less than 200ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{URL_BASE}}",
+					"host": [
+						"{{URL_BASE}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Obtener Producto por Id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Respuesta contiene campo '_id'\", function () {",
+							"    const jsonData = pm.response.json();",
+							"    const idProductoConsulta = pm.collectionVariables.get(\"ID_PRODUCTO\");",
+							"    pm.expect(jsonData._id).to.eql(idProductoConsulta);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{URL_BASE}}{{ID_PRODUCTO}}",
+					"host": [
+						"{{URL_BASE}}{{ID_PRODUCTO}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Eliminar Producto",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response contains correct deletion message\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.mensaje).to.eql(\"Producto eliminado\");",
+							"});",
+							"",
+							"// Update collection variable when product is successfully deleted",
+							"pm.test(\"Update product count after successful deletion\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    // Check if deletion was successful",
+							"    if (jsonData.mensaje === \"Producto eliminado\") {",
+							"        // Get current value of CANTIDAD_PRODUCTOS",
+							"        var currentCount = pm.collectionVariables.get(\"CANTIDAD_PRODUCTOS\");",
+							"        ",
+							"        // Convert to number and decrease by 1",
+							"        var newCount = parseInt(currentCount || 0) - 1;",
+							"        ",
+							"        // Ensure count doesn't go below 0",
+							"        if (newCount < 0) {",
+							"            newCount = 0;",
+							"        }",
+							"        ",
+							"        // Update the collection variable",
+							"        pm.collectionVariables.set(\"CANTIDAD_PRODUCTOS\", newCount.toString());",
+							"        ",
+							"        console.log(\"Product count updated from \" + currentCount + \" to \" + newCount);",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{URL_BASE}}{{ID_PRODUCTO}}",
+					"host": [
+						"{{URL_BASE}}{{ID_PRODUCTO}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Actualizar Producto",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Verificar que la respuesta contiene el atributo 'producto' de tipo object\", function () {",
+							"    // Parsear la respuesta JSON",
+							"    var jsonData = pm.response.json();",
+							"    ",
+							"    // Verificar que existe el atributo \"producto\"",
+							"    pm.expect(jsonData).to.have.property('producto');",
+							"    ",
+							"    // Verificar que el atributo \"producto\" es de tipo object",
+							"    pm.expect(jsonData.producto).to.be.an('object');",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"codigo\": 96,\n    \"nombre\": \"Ruana de lana\",\n    \"precio\": 350000,\n    \"categoria\": \"Ropa\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL_BASE}}{{ID_PRODUCTO}}",
+					"host": [
+						"{{URL_BASE}}{{ID_PRODUCTO}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "URL_BASE",
+			"value": "http://localhost:3000/api/productos/"
+		},
+		{
+			"key": "ID_PRODUCTO",
+			"value": "691cc2834e12b2dfa14080cd"
+		},
+		{
+			"key": "CANTIDAD_PRODUCTOS",
+			"value": 1
+		}
+	]
+}
